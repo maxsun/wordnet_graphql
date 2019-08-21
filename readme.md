@@ -1,12 +1,12 @@
 
-# Wordnet-GraphQL Interface
+# Wordnet-GraphQL Schema
 
 ### To-Do List:
 
-- [x] Implement Synset Interface
-- [x] Implement Synset Interface Tests
-- [x] Implement Lemma Interface
-- [x] Implement Lemma Interface Tests
+- [x] Implement Synset GraphQL Object Type
+- [x] Implement Synset Tests
+- [x] Implement Lemma Object Type
+- [x] Implement Lemma Tests
 - [ ] Implement Finitely recursive queries (ie: get hyponyms until depth >= n)
 - [ ] Write Code Examples
 
