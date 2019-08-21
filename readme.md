@@ -5,8 +5,8 @@
 
 - [x] Implement Synset Interface
 - [x] Implement Synset Interface Tests
-- [ ] Implement Lemma Interface
-- [ ] Implement Lemma Interface Tests
+- [x] Implement Lemma Interface
+- [x] Implement Lemma Interface Tests
 - [ ] Write Code Examples
 
 ---
