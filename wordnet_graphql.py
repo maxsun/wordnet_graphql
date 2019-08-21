@@ -1,5 +1,7 @@
+# 2019 Max Sun
+
 from nltk.corpus import wordnet as wn
-from nltk.corpus.reader.wordnet import Synset
+from nltk.corpus.reader.wordnet import Synset, Lemma
 from typing import List, Optional
 from enum import Enum
 
@@ -7,20 +9,25 @@ import graphene
 from graphene.test import Client
 from pprint import pprint
 
-NOUN = 'n'
-VERB = 'v'
-ADVERB = 'r'
-ADJECTIVE = 'a'
+
+def get_lemma_str(lemma: Lemma) -> str:
+    tup = lemma._synset._name, lemma._name
+    return "%s.%s" % tup
 
 
 def synset_to_node(synset: Synset):
     return SynsetNode(name=synset.name())
 
+
+def lemma_to_node(lemma: Lemma):
+    return LemmaNode(id=get_lemma_str(lemma))
+
+
 class SynsetNode(graphene.ObjectType):
     # Synset Attributes
     name = graphene.String()
     pos = graphene.String()
-    # ToDo: Lemmas ...
+    lemmas = graphene.List(lambda: LemmaNode)
     definition = graphene.String()
     examples = graphene.List(graphene.String)
     offset = graphene.Int()
@@ -49,6 +56,10 @@ class SynsetNode(graphene.ObjectType):
 
     def resolve_pos(self, info):
         return wn.synset(self.name).pos()
+
+
+    def resolve_lemmas(self, info):
+        return list(map(lemma_to_node, wn.synset(self.name).lemmas()))
 
 
     def resolve_examples(self, info):
@@ -187,12 +198,157 @@ class SynsetNode(graphene.ObjectType):
         return 'SynsetNode(' + self.name + ')'
 
 
+class LemmaNode(graphene.ObjectType):
+    # Lemma Attributes
+    id = graphene.String()
+    name = graphene.String()
+    synset = graphene.Field(SynsetNode())
+    syntactic_marker = graphene.String()
+    count = graphene.Int()
+    # Lemma Methods
+    antonyms = graphene.List(lambda: LemmaNode)
+    hypernyms = graphene.List(lambda: LemmaNode)
+    instance_hypernyms = graphene.List(lambda: LemmaNode)
+    hyponyms = graphene.List(lambda: LemmaNode)
+    instance_hyponyms = graphene.List(lambda: LemmaNode)
+    member_holonyms = graphene.List(lambda: LemmaNode)
+    substance_holonyms = graphene.List(lambda: LemmaNode)
+    part_holonyms = graphene.List(lambda: LemmaNode)
+    member_meronyms = graphene.List(lambda: LemmaNode)
+    substance_meronyms = graphene.List(lambda: LemmaNode)
+    part_meronyms = graphene.List(lambda: LemmaNode)
+    topic_domains = graphene.List(lambda: LemmaNode)
+    region_domains = graphene.List(lambda: LemmaNode)
+    usage_domains = graphene.List(lambda: LemmaNode)
+    attributes = graphene.List(lambda: LemmaNode)
+    derivationally_related_forms = graphene.List(lambda: LemmaNode)
+    entailments = graphene.List(lambda: LemmaNode)
+    causes = graphene.List(lambda: LemmaNode)
+    also_sees = graphene.List(lambda: LemmaNode)
+    verb_groups = graphene.List(lambda: LemmaNode)
+    similar_tos = graphene.List(lambda: LemmaNode)
+    pertainyms = graphene.List(lambda: LemmaNode)
+
+
+    def resolve_name(self, info):
+        return wn.lemma(self.id).name()
+
+
+    def resolve_synset(self, info):
+        return synset_to_node(wn.lemma(self.id).synset())
+
+
+    def resolve_syntactic_marker(self, info):
+        return wn.lemma(self.id).syntactic_marker()
+
+
+    def resolve_count(self, info):
+        return wn.lemma(self.id).count()
+
+
+    def resolve_antonyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).antonyms()))
+
+
+    def resolve_hypernyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).hypernyms()))
+
+
+    def resolve_instance_hypernyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).instance_hypernyms()))
+
+
+    def resolve_hyponyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).hyponyms()))
+
+
+    def resolve_instance_hyponyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).instance_hyponyms()))
+
+
+    def resolve_member_holonyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).member_holonyms()))
+
+
+    def resolve_substance_holonyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).substance_holonyms()))
+
+
+    def resolve_part_holonyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).part_holonyms()))
+
+
+    def resolve_member_meronyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).member_meronyms()))
+
+
+    def resolve_substance_meronyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).substance_meronyms()))
+
+
+    def resolve_part_meronyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).part_meronyms()))
+
+
+    def resolve_topic_domains(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).topic_domains()))
+
+
+    def resolve_region_domains(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).region_domains()))
+
+
+    def resolve_usage_domains(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).usage_domains()))
+
+
+    def resolve_attributes(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).attributes()))
+
+
+    def resolve_derivationally_related_forms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).derivationally_related_forms()))
+
+
+    def resolve_entailments(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).entailments()))
+
+
+    def resolve_causes(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).causes()))
+
+    
+    def resolve_also_sees(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).also_sees()))
+
+
+    def resolve_verb_groups(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).verb_groups()))
+
+
+    def resolve_similar_tos(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).similar_tos()))
+
+
+    def resolve_pertainyms(self, info):
+        return list(map(lemma_to_node, wn.lemma(self.id).pertainyms()))
+
+
+    def __repr__(self):
+        return 'LemmaNode(' + self.id + ')'
+
+
 class Query(graphene.ObjectType):
     synset = graphene.Field(SynsetNode, name=graphene.String())
+    lemma = graphene.Field(LemmaNode, id=graphene.String())
 
 
     def resolve_synset(self, info, name):
         return synset_to_node(wn.synset(name))
+
+
+    def resolve_lemma(self, info, id):
+        return lemma_to_node(wn.lemma(id))
 
 
 schema = graphene.Schema(query=Query)
