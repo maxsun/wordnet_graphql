@@ -8,6 +8,7 @@
 - [x] Implement Lemma Object Type
 - [x] Implement Lemma Tests
 - [ ] Implement Finitely recursive queries (ie: get hyponyms until depth >= n)
+- [ ] Add docstrings
 - [ ] Write Code Examples
 
 ---
