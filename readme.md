@@ -9,6 +9,8 @@
 - [ ] Implement Lemma Interface Tests
 - [ ] Write Code Examples
 
+---
+
 This repo contains (work-in-progress) code for a GraphQL schema/API for NLTK Wordnet.
 
 
