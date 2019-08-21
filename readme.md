@@ -7,6 +7,7 @@
 - [x] Implement Synset Interface Tests
 - [x] Implement Lemma Interface
 - [x] Implement Lemma Interface Tests
+- [ ] Implement Finitely recursive queries (ie: get hyponyms until depth >= n)
 - [ ] Write Code Examples
 
 ---
