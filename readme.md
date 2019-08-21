@@ -11,7 +11,9 @@
 
 ---
 
-This repo contains (work-in-progress) code for a GraphQL schema/API for NLTK Wordnet.
+This repo contains (work-in-progress) code for a [GraphQL](https://graphql.org/) schema/API for [NLTK Wordnet](http://www.nltk.org/howto/wordnet.html).
+
+For deeper documentation, see the [Wordnet Source](https://wordnet.princeton.edu/documentation/wngloss7wn).
 
 
 For example, this query:
@@ -37,3 +39,4 @@ returns:
                                      [OrderedDict([('name',
                                                     'machine.n.01')])])]))])}
 ```
+
