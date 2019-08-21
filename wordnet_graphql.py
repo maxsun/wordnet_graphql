@@ -17,38 +17,34 @@ def synset_to_node(synset: Synset):
     return SynsetNode(name=synset.name())
 
 class SynsetNode(graphene.ObjectType):
+    # Synset Attributes
     name = graphene.String()
     pos = graphene.String()
     # ToDo: Lemmas ...
+    definition = graphene.String()
     examples = graphene.List(graphene.String)
     offset = graphene.Int()
     lexname = graphene.String()
-    definition = graphene.String()
-
+    # Synset Methods
     hypernyms = graphene.List(lambda: SynsetNode)
     instance_hypernyms = graphene.List(lambda: SynsetNode)
-
     hyponyms = graphene.List(lambda: SynsetNode)
     instance_hyponyms = graphene.List(lambda: SynsetNode)
-
     member_holonyms = graphene.List(lambda: SynsetNode)
     substance_holonyms = graphene.List(lambda: SynsetNode)
     part_holonyms = graphene.List(lambda: SynsetNode)
-
     member_meronyms = graphene.List(lambda: SynsetNode)
     substance_meronyms = graphene.List(lambda: SynsetNode)
     part_meronyms = graphene.List(lambda: SynsetNode)
-
     entailments = graphene.List(lambda: SynsetNode)
     causes = graphene.List(lambda: SynsetNode)
     also_sees = graphene.List(lambda: SynsetNode)
     verb_groups = graphene.List(lambda: SynsetNode)
     similar_tos = graphene.List(lambda: SynsetNode)
     depth = graphene.Int()
-
-    # ToDo: root_hypernyms = graphene.List(lambda: SynsetNode)
-    # ToDo: common_hypernyms = graphene.List(lambda: SynsetNode)
-    # ToDo: lowest_common_hypernyms = graphene.List(lambda: SynsetNode)
+    root_hypernyms = graphene.List(lambda: SynsetNode)
+    common_hypernyms = graphene.List(lambda: SynsetNode, otherSynsetName=graphene.String())
+    lowest_common_hypernyms = graphene.List(lambda: SynsetNode, otherSynsetName=graphene.String())
 
 
     def resolve_pos(self, info):
@@ -173,6 +169,20 @@ class SynsetNode(graphene.ObjectType):
         return wn.synset(self.name).min_depth()
 
 
+    def resolve_root_hypernyms(self, info):
+        return list(map(synset_to_node, wn.synset(self.name).root_hypernyms()))
+
+
+    def resolve_common_hypernyms(self, info, otherSynsetName='entity.n.01'):
+        otherSynset = wn.synset(otherSynsetName)
+        return list(map(synset_to_node, wn.synset(self.name).common_hypernyms(otherSynset)))
+
+
+    def resolve_lowest_common_hypernyms(self, info, otherSynsetName='entity.n.01'):
+        otherSynset = wn.synset(otherSynsetName)
+        return list(map(synset_to_node, wn.synset(self.name).lowest_common_hypernyms(otherSynset)))
+
+
     def __repr__(self):
         return 'SynsetNode(' + self.name + ')'
 
@@ -186,18 +196,3 @@ class Query(graphene.ObjectType):
 
 
 schema = graphene.Schema(query=Query)
-client = Client(schema)
-
-query = """
-    query TestQuery {
-        synset(name: "dog.n.01") {
-            pos
-            examples
-            depth
-            offset
-            lexname
-            definition
-        }
-    }
-"""
-pprint(client.execute(query))
