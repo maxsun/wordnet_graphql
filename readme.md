@@ -1,17 +1,21 @@
 
-# Wordnet-GraphQL Interface
+# Wordnet-GraphQL Schema
 
 ### To-Do List:
 
-- [x] Implement Synset Interface
-- [x] Implement Synset Interface Tests
-- [ ] Implement Lemma Interface
-- [ ] Implement Lemma Interface Tests
+- [x] Implement Synset GraphQL Object Type
+- [x] Implement Synset Tests
+- [x] Implement Lemma Object Type
+- [x] Implement Lemma Tests
+- [ ] Implement Finitely recursive queries (ie: get hyponyms until depth >= n)
+- [ ] Add docstrings
 - [ ] Write Code Examples
 
 ---
 
-This repo contains (work-in-progress) code for a GraphQL schema/API for NLTK Wordnet.
+This repo contains (work-in-progress) code for a [GraphQL](https://graphql.org/) schema/API for [NLTK Wordnet](http://www.nltk.org/howto/wordnet.html).
+
+For deeper documentation, see the [Wordnet Source](https://wordnet.princeton.edu/documentation/wngloss7wn).
 
 
 For example, this query:
@@ -37,3 +41,4 @@ returns:
                                      [OrderedDict([('name',
                                                     'machine.n.01')])])]))])}
 ```
+
