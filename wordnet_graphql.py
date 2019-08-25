@@ -47,10 +47,27 @@ class SynsetNode(graphene.ObjectType):
     also_sees = graphene.List(lambda: SynsetNode)
     verb_groups = graphene.List(lambda: SynsetNode)
     similar_tos = graphene.List(lambda: SynsetNode)
-    depth = graphene.Int()
     root_hypernyms = graphene.List(lambda: SynsetNode)
+    max_depth = graphene.Int()
+    min_depth = graphene.Int()
+    # Missing: closure
+    # Missing: hypernym_paths
     common_hypernyms = graphene.List(lambda: SynsetNode, otherSynsetName=graphene.String())
     lowest_common_hypernyms = graphene.List(lambda: SynsetNode, otherSynsetName=graphene.String())
+    # Missing: hypernym_distances
+    # Missing: _shortest_hypernym_paths
+    shortest_path_distance = graphene.Float(otherSynsetName=graphene.String(required=False), simulateRoot=graphene.Boolean(required=False))
+    # Missing: shortest_path_distance
+    # Missing: tree
+    path_similarity = graphene.Float(otherSynsetName=graphene.String(required=False), simulateRoot=graphene.Boolean(required=False))
+    lch_similarity = graphene.Float(otherSynsetName=graphene.String(), simulateRoot=graphene.Boolean(required=False), default_value=None)
+    wup_similarity = graphene.Float(otherSynsetName=graphene.String(required=False), simulateRoot=graphene.Boolean(required=False), default_value=None)
+    # Missing: res_similarity
+    # Missing: jcn_similarity
+    # Missing: lin_similarity
+    # Missing: _iter_hypernym_lists
+    # Missing: __repr__
+    # Missing: _related
 
 
     def resolve_pos(self, info):
@@ -169,18 +186,16 @@ class SynsetNode(graphene.ObjectType):
         return list(map(synset_to_node, wn.synset(self.name).similar_tos()))
 
 
-    def resolve_depth(self, info):
-        """
-        shortest path from node to a top taxonomy node
-        'entity' has depth = 0
-        'horse' has depth = 14
-        'mare' has depth = 15
-        """
-        return wn.synset(self.name).min_depth()
-
-
     def resolve_root_hypernyms(self, info):
         return list(map(synset_to_node, wn.synset(self.name).root_hypernyms()))
+
+
+    def resolve_max_depth(self, info):
+        return wn.synset(self.name).max_depth()
+
+
+    def resolve_min_depth(self, info):
+        return wn.synset(self.name).min_depth()
 
 
     def resolve_common_hypernyms(self, info, otherSynsetName='entity.n.01'):
@@ -191,6 +206,26 @@ class SynsetNode(graphene.ObjectType):
     def resolve_lowest_common_hypernyms(self, info, otherSynsetName='entity.n.01'):
         otherSynset = wn.synset(otherSynsetName)
         return list(map(synset_to_node, wn.synset(self.name).lowest_common_hypernyms(otherSynset)))
+
+
+    def resolve_shortest_path_distance(self, info, otherSynsetName='entity.n.01', simulateRoot=False):
+        otherSynset = wn.synset(otherSynsetName)
+        return wn.synset(self.name).shortest_path_distance(otherSynset, simulateRoot)
+
+
+    def resolve_path_similarity(self, info, otherSynsetName='entity.n.01', simulateRoot=True):
+        otherSynset = wn.synset(otherSynsetName)
+        return wn.synset(self.name).path_similarity(otherSynset, simulateRoot)
+
+
+    def resolve_lch_similarity(self, info, otherSynsetName, simulateRoot=True):
+        otherSynset = wn.synset(otherSynsetName)
+        return wn.synset(self.name).lch_similarity(otherSynset, simulate_root=simulateRoot)
+
+
+    def resolve_wup_similarity(self, info, otherSynsetName='entity.n.01', simulateRoot=True):
+        otherSynset = wn.synset(otherSynsetName)
+        return wn.synset(self.name).wup_similarity(otherSynset, simulate_root=simulateRoot)
 
 
     def __repr__(self):
@@ -338,13 +373,13 @@ class LemmaNode(graphene.ObjectType):
 
 
 class Query(graphene.ObjectType):
-    all_synsets = graphene.List(SynsetNode)
+    all_synsets = graphene.List(SynsetNode, pos=graphene.String(required=False))
     synset = graphene.Field(SynsetNode, name=graphene.String())
     lemma = graphene.Field(LemmaNode, id=graphene.String())
 
 
-    def resolve_all_synsets(self, info):
-        return list(map(synset_to_node, wn.all_synsets()))
+    def resolve_all_synsets(self, info, pos=None):
+        return list(map(synset_to_node, wn.all_synsets(pos=pos)))
 
     def resolve_synset(self, info, name):
         return synset_to_node(wn.synset(name))
@@ -355,3 +390,7 @@ class Query(graphene.ObjectType):
 
 
 schema = graphene.Schema(query=Query)
+
+# a = wn.synset('entity.n.01')
+# b = wn.synset('baby.n.05')
+# print(a.path_similarity(b))

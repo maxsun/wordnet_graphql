@@ -3,6 +3,9 @@ import wordnet_graphql
 from numpy.random import permutation
 from graphene.test import Client
 from nltk.corpus import wordnet as wn
+import random
+
+NUM_RANDOM_TRIALS = 10
 
 all_synsets = list(wn.all_synsets())
 
@@ -45,83 +48,83 @@ class LemmaTest(unittest.TestCase):
     def test_lemma(self, lemma_id='vocal.a.01.vocal'):
         lemma = wn.lemma(lemma_id)
         data = client.execute('''
-            query TestQuery {
-                    lemma (id: "%s") {
+            query TestQuery {{
+                    lemma (id: "{0}") {{
                         name
-                        synset {
+                        synset {{
                             name
-                        }
+                        }}
                         syntacticMarker
                         count
-                        antonyms {
+                        antonyms {{
                             name
-                        }
-                        hypernyms {
+                        }}
+                        hypernyms {{
                             name
-                        }
-                        instanceHypernyms {
+                        }}
+                        instanceHypernyms {{
                             name
-                        }
-                        hyponyms {
+                        }}
+                        hyponyms {{
                             name
-                        }
-                        instanceHyponyms {
+                        }}
+                        instanceHyponyms {{
                             name
-                        }
-                        memberHolonyms {
+                        }}
+                        memberHolonyms {{
                             name
-                        }
-                        substanceHolonyms {
+                        }}
+                        substanceHolonyms {{
                             name
-                        }
-                        partHolonyms {
+                        }}
+                        partHolonyms {{
                             name
-                        }
-                        memberMeronyms {
+                        }}
+                        memberMeronyms {{
                             name
-                        }
-                        substanceMeronyms {
+                        }}
+                        substanceMeronyms {{
                             name
-                        }
-                        partMeronyms {
+                        }}
+                        partMeronyms {{
                             name
-                        }
-                        topicDomains {
+                        }}
+                        topicDomains {{
                             name
-                        }
-                        regionDomains {
+                        }}
+                        regionDomains {{
                             name
-                        }
-                        usageDomains {
+                        }}
+                        usageDomains {{
                             name
-                        }
-                        attributes {
+                        }}
+                        attributes {{
                             name
-                        }
-                        derivationallyRelatedForms {
+                        }}
+                        derivationallyRelatedForms {{
                             name
-                        }
-                        entailments {
+                        }}
+                        entailments {{
                             name
-                        }
-                        causes {
+                        }}
+                        causes {{
                             name
-                        }
-                        alsoSees {
+                        }}
+                        alsoSees {{
                             name
-                        }
-                        verbGroups {
+                        }}
+                        verbGroups {{
                             name
-                        }
-                        similarTos {
+                        }}
+                        similarTos {{
                             name
-                        }
-                        pertainyms {
+                        }}
+                        pertainyms {{
                             name
-                        }
-                    }
-                }
-        ''' % lemma_id)
+                        }}
+                    }}
+                }}
+        '''.format(lemma_id))
         data = data['data']['lemma']
 
         self.assertEqual(lemma.name(), data['name'])
@@ -218,13 +221,13 @@ class LemmaTest(unittest.TestCase):
             self.assertEqual(l.name(), data['pertainyms'][i]['name'])
 
 
-    def test_first_1000_lemmas(self):
-        for synset in all_synsets[:1000]:
+    def test_first_n_lemmas(self, n=NUM_RANDOM_TRIALS):
+        for synset in all_synsets[:n]:
             self.test_lemma(wordnet_graphql.get_lemma_str(synset.lemmas()[0]))
 
 
-    def test_random_1000_lemmas(self):
-        for synset in permutation(all_synsets)[:1000]:
+    def test_random_n_lemmas(self, n=NUM_RANDOM_TRIALS):
+        for synset in permutation(all_synsets)[:n]:
             self.test_lemma(wordnet_graphql.get_lemma_str(synset.lemmas()[0]))
 
 
@@ -270,89 +273,109 @@ class SynsetTest(unittest.TestCase):
     """
     def test_all_synsets(self):
         data = client.execute('''
-            query TestQuery {
-                allSynsets {
+            query TestQuery {{
+                allSynsets {{
                     name
-                }
-            }
-        ''')['data']
+                }}
+            }}
+        '''.format())['data']
         for i, synset in enumerate(data['allSynsets']):
             self.assertEqual(all_synsets[i].name(), synset['name'])
+        
+        data = client.execute('''
+            query TestQuery {{
+                allSynsets(pos: "n") {{
+                    name
+                }}
+            }}
+        '''.format())['data']
+        just_noun_synsets = [s for s in wn.all_synsets(pos='n')]
+        for i, synset in enumerate(data['allSynsets']):
+            self.assertEqual(just_noun_synsets[i].name(), synset['name'])
 
     def test_synset(self, synset_name='entity.n.01', synset_name2='entity.n.01'):
         synset = wn.synset(synset_name)
+        randomSynsetOfSamePos = random.choice([s for s in all_synsets if s.pos() == synset.pos()])
         synset2 = wn.synset(synset_name2)
-        data = client.execute('''
-            query TestQuery {
-                synset(name: "%s") {
+        query_results = client.execute('''
+            query TestQuery {{
+                synset(name: "{0}") {{
                     name
                     pos
-                    lemmas {
+                    lemmas {{
                         name
-                    }
+                    }}
                     definition
                     examples
                     offset
                     lexname
-                    depth
-                    hypernyms {
+                    hypernyms {{
                         name
-                    }
-                    instanceHypernyms {
+                    }}
+                    instanceHypernyms {{
                         name
-                    }
-                    hyponyms {
+                    }}
+                    hyponyms {{
                         name
-                    }
-                    instanceHyponyms {
+                    }}
+                    instanceHyponyms {{
                         name
-                    }
-                    memberHolonyms {
+                    }}
+                    memberHolonyms {{
                         name
-                    }
-                    substanceHolonyms {
+                    }}
+                    substanceHolonyms {{
                         name
-                    }
-                    partHolonyms {
+                    }}
+                    partHolonyms {{
                         name
-                    }
-                    memberMeronyms {
+                    }}
+                    memberMeronyms {{
                         name
-                    }
-                    substanceMeronyms {
+                    }}
+                    substanceMeronyms {{
                         name
-                    }
-                    partMeronyms {
+                    }}
+                    partMeronyms {{
                         name
-                    }
+                    }}
                     
-                    entailments {
+                    entailments {{
                         name
-                    }
-                    causes {
+                    }}
+                    causes {{
                         name
-                    }
-                    alsoSees {
+                    }}
+                    alsoSees {{
                         name
-                    }
-                    verbGroups {
+                    }}
+                    verbGroups {{
                         name
-                    }
-                    similarTos {
+                    }}
+                    similarTos {{
                         name
-                    }
-                    rootHypernyms {
+                    }}
+                    rootHypernyms {{
                         name
-                    }
-                    commonHypernyms(otherSynsetName: "%s") {
+                    }}
+                    maxDepth
+                    minDepth
+                    commonHypernyms(otherSynsetName: "{1}") {{
                         name
-                    }
-                    lowestCommonHypernyms(otherSynsetName: "%s") {
+                    }}
+                    lowestCommonHypernyms(otherSynsetName: "{1}") {{
                         name
-                    }
-                }
-            }
-        ''' % (synset_name, synset_name2, synset_name2))['data']['synset']
+                    }}
+                    shortestPathDistance(otherSynsetName: "{1}")
+                    pathSimilarity(otherSynsetName: "{1}")
+                    lchSimilarity(otherSynsetName: "{2}")
+                    wupSimilarity(otherSynsetName: "{1}")
+                }}
+            }}
+        '''.format(synset_name, synset_name2, randomSynsetOfSamePos.name()))
+        if not 'data' in query_results or isinstance(query_results['data'], list):
+            raise Exception(query_results)
+        data = query_results['data']['synset']
 
         self.assertEqual(synset.name(), data['name'])
         self.assertEqual(synset.pos(), data['pos'])
@@ -365,7 +388,6 @@ class SynsetTest(unittest.TestCase):
         self.assertEqual(synset.examples(), data['examples'])
         self.assertEqual(synset.offset(), data['offset'])
         self.assertEqual(synset.lexname(), data['lexname'])
-        self.assertEqual(synset.min_depth(), data['depth'])
 
         hypernyms = synset.hypernyms()
         for i, s in enumerate(hypernyms):
@@ -431,6 +453,9 @@ class SynsetTest(unittest.TestCase):
         for i, s in enumerate(rootHypernyms):
             self.assertEqual(s.name(), data['rootHypernyms'][i]['name'])
 
+        self.assertEqual(synset.max_depth(), data['maxDepth'])
+        self.assertEqual(synset.min_depth(), data['minDepth'])
+
         commonHypernyms = synset.common_hypernyms(synset2)
         for i, s in enumerate(commonHypernyms):
             self.assertEqual(s.name(), data['commonHypernyms'][i]['name'])
@@ -439,14 +464,20 @@ class SynsetTest(unittest.TestCase):
         for i, s in enumerate(lowestCommonHypernyms):
             self.assertEqual(s.name(), data['lowestCommonHypernyms'][i]['name'])
 
+        self.assertEqual(synset.shortest_path_distance(synset2), data['shortestPathDistance'])
+        self.assertEqual(synset.path_similarity(synset2), data['pathSimilarity'])
 
-    def test_first_1000_synsets(self):
-        for synset in all_synsets[:1000]:
+        self.assertEqual(synset.lch_similarity(randomSynsetOfSamePos), data['lchSimilarity'])
+        self.assertEqual(synset.wup_similarity(synset2), data['wupSimilarity'])
+
+
+    def test_first_n_synsets(self, n=NUM_RANDOM_TRIALS):
+        for synset in all_synsets[:n]:
             self.test_synset(synset.name())
 
     
-    def test_random_1000_synsets(self):
-        for synset in permutation(all_synsets)[:1000]:
+    def test_random_n_synsets(self, n=NUM_RANDOM_TRIALS):
+        for synset in permutation(all_synsets)[:n]:
             self.test_synset(synset.name())
 
 
