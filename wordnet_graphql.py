@@ -11,8 +11,7 @@ from pprint import pprint
 
 
 def get_lemma_str(lemma: Lemma) -> str:
-    tup = lemma._synset._name, lemma._name
-    return "%s.%s" % tup
+    return "%s.%s" % (lemma._synset._name, lemma._name)
 
 
 def synset_to_node(synset: Synset):
@@ -339,9 +338,13 @@ class LemmaNode(graphene.ObjectType):
 
 
 class Query(graphene.ObjectType):
+    all_synsets = graphene.List(SynsetNode)
     synset = graphene.Field(SynsetNode, name=graphene.String())
     lemma = graphene.Field(LemmaNode, id=graphene.String())
 
+
+    def resolve_all_synsets(self, info):
+        return list(map(synset_to_node, wn.all_synsets()))
 
     def resolve_synset(self, info, name):
         return synset_to_node(wn.synset(name))

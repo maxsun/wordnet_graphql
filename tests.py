@@ -268,7 +268,16 @@ class SynsetTest(unittest.TestCase):
     - common_hypernyms
     - lowest_common_hypernyms
     """
-
+    def test_all_synsets(self):
+        data = client.execute('''
+            query TestQuery {
+                allSynsets {
+                    name
+                }
+            }
+        ''')['data']
+        for i, synset in enumerate(data['allSynsets']):
+            self.assertEqual(all_synsets[i].name(), synset['name'])
 
     def test_synset(self, synset_name='entity.n.01', synset_name2='entity.n.01'):
         synset = wn.synset(synset_name)
@@ -341,7 +350,6 @@ class SynsetTest(unittest.TestCase):
                     lowestCommonHypernyms(otherSynsetName: "%s") {
                         name
                     }
-
                 }
             }
         ''' % (synset_name, synset_name2, synset_name2))['data']['synset']
