@@ -7,6 +7,7 @@
 - [x] Implement Synset Tests
 - [x] Implement Lemma Object Type
 - [x] Implement Lemma Tests
+- [ ] Implement synsets resolver query
 - [ ] Add docstrings
 - [ ] Write Code Examples
 
