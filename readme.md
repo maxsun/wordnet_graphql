@@ -7,24 +7,19 @@
 - [x] Implement Synset Tests
 - [x] Implement Lemma Object Type
 - [x] Implement Lemma Tests
-- [ ] Implement Finitely recursive queries (ie: get hyponyms until depth >= n)
 - [ ] Add docstrings
 - [ ] Write Code Examples
-- [ ] Improve tests by using variables in the queries
 
 Missing:
 - Synset:
-  - closure
   - hypernym_paths
   - hypernym_distances
-  - _shortest_hypernym_paths
   - tree
   - res_similarity
   - jcn_similarity
   - lin_similarity
-  - _iter_hypernym_lists
-  - __repr__
-  - _related
+- Lemma:
+  - None :)
 
 ---
 
