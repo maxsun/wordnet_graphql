@@ -189,16 +189,19 @@ class SynsetNode(WordNetObjectNode):
     pos = graphene.String()
     offset = graphene.Int()
     name = graphene.String()
-    # Missing: frame ids
+    frame_ids = graphene.List(graphene.Int)
     definition = graphene.String()
-    # Missing: examples = graphene.String()
+    examples = graphene.List(graphene.String)
     lexname = graphene.String()
-    # Missing: lemma_names = graphene.List(graphene.String()
+    lemma_names = graphene.List(graphene.String)
     lemmas = graphene.List(lambda: LemmaNode)
     root_hypernyms = graphene.List(lambda: SynsetNode)
     max_depth = graphene.Int()
     min_depth = graphene.Int()
-    # Missing: closure
+    closure = graphene.List(
+        lambda: SynsetNode,
+        relationshipName=graphene.String(required=True),
+        depth=graphene.Int(required=False))
     # Missing: hypernym paths
     common_hypernyms = graphene.List(
         lambda: SynsetNode,
@@ -235,11 +238,20 @@ class SynsetNode(WordNetObjectNode):
     def resolve_name(self, info):
         return self.wordnet_obj.name()
 
+    def resolve_frame_ids(self, info):
+        return self.wordnet_obj.frame_ids()
+
     def resolve_definition(self, info):
         return self.wordnet_obj.definition()
 
+    def resolve_examples(self, info):
+        return self.wordnet_obj.examples()
+
     def resolve_lexname(self, info):
         return self.wordnet_obj.lexname()
+
+    def resolve_lemma_names(self, info):
+        return self.wordnet_obj.lemma_names()
 
     def resolve_lemmas(self, info):
         return list(map(lambda x: LemmaNode(x), self.wordnet_obj.lemmas()))
@@ -254,6 +266,56 @@ class SynsetNode(WordNetObjectNode):
 
     def resolve_min_depth(self, info):
         return self.wordnet_obj.min_depth()
+
+    def resolve_closure(self, info, relationshipName, depth=-1):
+        if relationshipName == "hypernyms":
+            rel = lambda s:s.hypernyms()
+        elif relationshipName == "instance_hypernyms":
+            rel = lambda s:s.instance_hypernyms()
+        elif relationshipName == "hyponyms":
+            rel = lambda s:s.hyponyms()
+        elif relationshipName == "instance_hyponyms":
+            rel = lambda s:s.instance_hyponyms()
+        elif relationshipName == "member_holonyms":
+            rel = lambda s:s.member_holonyms()
+        elif relationshipName == "substance_holonyms":
+            rel = lambda s:s.substance_holonyms()
+        elif relationshipName == "part_holonyms":
+            rel = lambda s:s.part_holonyms()
+        elif relationshipName == "member_meronyms":
+            rel = lambda s:s.member_meronyms()
+        elif relationshipName == "substance_meronyms":
+            rel = lambda s:s.substance_meronyms()
+        elif relationshipName == "part_meronyms":
+            rel = lambda s:s.part_meronyms()
+        elif relationshipName == "topic_domains":
+            rel = lambda s:s.topic_domains()
+        elif relationshipName == "in_topic_domains":
+            rel = lambda s:s.in_topic_domains()
+        elif relationshipName == "region_domains":
+            rel = lambda s:s.region_domains()
+        elif relationshipName == "in_region_domains":
+            rel = lambda s:s.in_region_domains()
+        elif relationshipName == "usage_domains":
+            rel = lambda s:s.usage_domains()
+        elif relationshipName == "in_usage_domains":
+            rel = lambda s:s.in_usage_domains()
+        elif relationshipName == "attributes":
+            rel = lambda s:s.attributes()
+        elif relationshipName == "entailments":
+            rel = lambda s:s.entailments()
+        elif relationshipName == "causes":
+            rel = lambda s:s.causes()
+        elif relationshipName == "also_sees":
+            rel = lambda s:s.also_sees()
+        elif relationshipName == "verb_groups":
+            rel = lambda s:s.verb_groups()
+        elif relationshipName == "similar_tos":
+            rel = lambda s:s.similar_tos()
+
+        return list(map(
+            lambda x: SynsetNode(x),
+            self.wordnet_obj.closure(rel, depth)))
 
     def resolve_common_hypernyms(self, info, otherSynsetName):
         otherSynset = wn.synset(otherSynsetName)
@@ -330,8 +392,8 @@ class LemmaNode(WordNetObjectNode):
     name = graphene.String()
     syntactic_marker = graphene.String()
     synset = graphene.Field(SynsetNode)
-    # Missing: frame_strings
-    # Missing: frame_ids
+    frame_strings = graphene.List(graphene.String)
+    frame_ids = graphene.List(graphene.Int)
     lang = graphene.String()
     key = graphene.String()
     count = graphene.Int()
@@ -347,6 +409,12 @@ class LemmaNode(WordNetObjectNode):
 
     def resolve_synset(self, info):
         return SynsetNode(self.wordnet_obj.synset())
+
+    def resolve_frame_strings(self, info):
+        return self.wordnet_obj.frame_strings()
+
+    def resolve_frame_ids(self, info):
+        return self.wordnet_obj.frame_ids()
 
     def resolve_lang(self, info):
         return self.wordnet_obj.lang()
@@ -401,3 +469,11 @@ class Query(graphene.ObjectType):
 
 
 schema = graphene.Schema(query=Query, types=[SynsetNode])
+# r = schema.execute('''
+#     query TestQuery {
+#         lemma(id: "dog.n.01.dog") {
+#             frameStrings
+#         }
+#     }
+# ''')
+# print(r.data, r.errors)

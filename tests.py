@@ -52,10 +52,14 @@ class LemmaTest(unittest.TestCase):
             query TestQuery {{
                     lemma (id: "{0}") {{
                         name
+                        syntacticMarker
                         synset {{
                             name
                         }}
-                        syntacticMarker
+                        frameStrings
+                        frameIds
+                        lang
+                        key
                         count
                         antonyms {{
                             name
@@ -130,6 +134,10 @@ class LemmaTest(unittest.TestCase):
 
         self.assertEqual(lemma.name(), data['name'])
         self.assertEqual(lemma.synset().name(), data['synset']['name'])
+        self.assertEqual(lemma.frame_strings(), data['frameStrings'])
+        self.assertListEqual(lemma.frame_ids(), data['frameIds'])
+        self.assertEqual(lemma.lang(), data['lang'])
+        self.assertEqual(lemma.key(), data['key'])
         self.assertEqual(lemma.syntactic_marker(), data['syntacticMarker'])
         self.assertEqual(lemma.count(), data['count'])
 
@@ -292,6 +300,46 @@ class SynsetTest(unittest.TestCase):
         for i, synset in enumerate(data['allSynsets']):
             self.assertEqual(just_noun_synsets[i].name(), synset['name'])
 
+    def test_closure(self, synset_name='dog.n.01'):
+        synset = wn.synset(synset_name)
+        relations = [
+            ("hypernyms", lambda s: s.hypernyms()),
+            ("instance_hypernyms", lambda s: s.instance_hypernyms()),
+            ("hyponyms", lambda s: s.hyponyms()),
+            ("instance_hyponyms", lambda s: s.instance_hyponyms()),
+            ("member_holonyms", lambda s: s.member_holonyms()),
+            ("substance_holonyms", lambda s: s.substance_holonyms()),
+            ("part_holonyms", lambda s: s.part_holonyms()),
+            ("member_meronyms", lambda s: s.member_meronyms()),
+            ("substance_meronyms", lambda s: s.substance_meronyms()),
+            ("part_meronyms", lambda s: s.part_meronyms()),
+            ("topic_domains", lambda s: s.topic_domains()),
+            ("in_topic_domains", lambda s: s.in_topic_domains()),
+            ("region_domains", lambda s: s.region_domains()),
+            ("in_region_domains", lambda s: s.in_region_domains()),
+            ("usage_domains", lambda s: s.usage_domains()),
+            ("in_usage_domains", lambda s: s.in_usage_domains()),
+            ("attributes", lambda s: s.attributes()),
+            ("entailments", lambda s: s.entailments()),
+            ("causes", lambda s: s.causes()),
+            ("also_sees", lambda s: s.also_sees()),
+            ("verb_groups", lambda s: s.verb_groups()),
+            ("similar_tos", lambda s: s.similar_tos())
+        ]
+        for rel in relations:
+            query_results = client.execute('''
+                query TestQuery {{
+                    synset(name: "{0}") {{
+                        closure (relationshipName: "{1}", depth: 5) {{
+                            name
+                        }}
+                    }}
+                }}
+            '''.format(synset_name, rel[0]))['data']
+            self.assertListEqual(
+                [x.name() for x in synset.closure(rel[1], 5)],
+                [x['name'] for x in query_results['synset']['closure']])
+
     def test_synset(self, synset_name='entity.n.01', synset_name2='entity.n.01'):
         synset = wn.synset(synset_name)
         randomSynsetOfSamePos = random.choice([s for s in all_synsets if s.pos() == synset.pos()])
@@ -300,11 +348,14 @@ class SynsetTest(unittest.TestCase):
             query TestQuery {{
                 synset(name: "{0}") {{
                     name
+                    frameIds
                     pos
                     lemmas {{
                         name
                     }}
                     definition
+                    examples
+                    lemmaNames
                     offset
                     lexname
                     hypernyms {{
@@ -337,7 +388,7 @@ class SynsetTest(unittest.TestCase):
                     partMeronyms {{
                         name
                     }}
-
+                    
                     entailments {{
                         name
                     }}
@@ -376,6 +427,7 @@ class SynsetTest(unittest.TestCase):
         data = query_results['data']['synset']
 
         self.assertEqual(synset.name(), data['name'])
+        self.assertListEqual(synset.frame_ids(), data['frameIds'])
         self.assertEqual(synset.pos(), data['pos'])
 
         lemmas = synset.lemmas()
@@ -383,7 +435,8 @@ class SynsetTest(unittest.TestCase):
             self.assertEqual(l.name(), data['lemmas'][i]['name'])
 
         self.assertEqual(synset.definition(), data['definition'])
-        # self.assertEqual(synset.examples(), data['examples'])
+        self.assertListEqual(synset.examples(), data['examples'])
+        self.assertListEqual(synset.lemma_names(), data['lemmaNames'])
         self.assertEqual(synset.offset(), data['offset'])
         self.assertEqual(synset.lexname(), data['lexname'])
 
@@ -475,6 +528,7 @@ class SynsetTest(unittest.TestCase):
     def test_random_n_synsets(self, n=NUM_RANDOM_TRIALS):
         for synset in permutation(all_synsets)[:n]:
             self.test_synset(synset.name())
+            self.test_closure(synset.name())
 
 
 print('Running Tests...')
